@@ -92,7 +92,7 @@ class DataLoader:
         }
         data2 = {
             b"data": list(itertools.chain(*[u[1000:2000] for u in data])),
-            b"labels": [i for j in range(1000) for i in range(10)]
+            b"labels": [i for i in range(10) for j in range(1000)]
         }
 
         with open("data/cifar-10-batches-py/data_bal_1", "wb") as file:

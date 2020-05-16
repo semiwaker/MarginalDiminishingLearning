@@ -37,4 +37,6 @@ if __name__ == "__main__":
         "None": lambda x: None,
         "baseline": trainBaseline
     }
+    if params.useGPU:
+        utils.selectDevice(0)
     trainFuncs[params.trainModel](params)
