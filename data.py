@@ -1,0 +1,90 @@
+import pickle
+import json
+import os.path as path
+
+import tensorflow as tf
+import tensorflow.keras as keras
+
+import option
+
+
+class DataLoader:
+    def __init__(self, params):
+        self.params = params
+        self.dataset = params.dataset
+
+    def readData(self):
+        self.meta = self.loadFile(path.join(self.dataset, "batches.meta"))
+        self.labelNames = [str(s, encoding="utf-8")
+                           for s in self.meta[b"label_names"]]
+
+        self.trainData = self.loadFile(
+            path.join(self.dataset, "data_batch_" + str(self.params.dataBatch)))
+        nextBatch = self.params.dataBatch + 1
+        nextBatch = 1 if nextBatch > 5 else nextBatch
+        self.testData = self.loadFile(
+            path.join(self.dataset, "data_batch_" + str(self.params.dataBatch)))
+        self.valData = self.loadFile(path.join(self.dataset, "test_batch"))
+        with open(self.params.splitPath, "r") as file:
+            self.split = json.load(file)
+
+        def applySplit(dataset, bias):
+            data = []
+            label = []
+            for i in range(10):
+                d = dataset[b"data"][i * 1000: i * 1000 + 1000]
+                l = dataset[b"labels"][i * 1000: i * 1000 + 1000]
+                if bias:
+                    data.extend(d[:self.split[i]])
+                    label.extend(l[:self.split[i]])
+                else:
+                    data.extend(d)
+                    label.extend(l)
+            return {b"data": data, b"labels": label}
+
+        if not self.params.dataUnbias:
+            self.trainData = applySplit(self.trainData, True)
+        else:
+            self.trainData = applySplit(self.trainData, False)
+
+        # Keep testData and valData unchanged
+        self.testData = applySplit(self.testData, False)
+        self.valData = applySplit(self.valData, False)
+
+
+        def makeDataset(data):
+            dataset = tf.data.Dataset.from_tensor_slices(data[b"data"])
+            dataset = dataset.map(lambda x: tf.reshape(x, [3, 32, 32]))
+            dataset = dataset.map(lambda x: tf.stack(
+                [x[0], x[1], x[2]], axis=-1))
+            dataset = dataset.map(lambda x: x/256)
+            labelset = tf.data.Dataset.from_tensor_slices(data[b"labels"])
+            labelset = labelset.map(lambda x: tf.one_hot(x, 10))
+            dataset = tf.data.Dataset.zip((dataset, labelset))
+            dataset = dataset.shuffle(10000)
+            dataset = dataset.batch(self.params.batchSize)
+            dataset = dataset.prefetch(2)
+            return dataset
+        self.trainSet, self.testSet, self.valSet = map(
+            makeDataset, (self.trainData, self.testData, self.valData))
+
+        return self.trainSet, self.testSet, self.valSet
+
+    def loadFile(self, file):
+        with open(file, "rb") as f:
+            d = pickle.load(f, encoding="bytes")
+        return d
+
+    def makeSplit(self):
+        split = [1000, 950, 950, 900, 500, 450, 400, 200, 100, 10]
+        with open(self.params.splitPath, "w") as file:
+            json.dump(split, file, indent=4)
+
+
+if __name__ == "__main__":
+    params = option.read()
+    dataloader = DataLoader(params)
+    train, test, val = dataloader.readData()
+    for data, label in train.take(1):
+        print(data)
+        print(label)
