@@ -35,7 +35,8 @@ class CateAcc(keras.metrics.Metric):
         super(CateAcc, self).__init__(name=name, **kwargs)
         self.cate_sum = self.add_weight(
             name="CateSum", shape=[10], initializer="zeros")
-        self.total = self.add_weight(name="total", initializer="zeros")
+        self.total = self.add_weight(
+            name="total", shape=[10], initializer="zeros")
 
     def update_state(self, y_true, y_pred, sample_weight=None):
         values = y_true * y_pred
@@ -43,12 +44,11 @@ class CateAcc(keras.metrics.Metric):
             sample_weight = tf.broadcast_weights(sample_weight, values)
             values *= sample_weight
         self.cate_sum.assign_add(tf.reduce_sum(values, axis=0))
-        self.total.assign_add(tf.reduce_mean(
-            tf.reduce_sum(tf.ones_like(y_true), axis=0)))
+        self.total.assign_add(tf.reduce_sum(y_true, axis=0))
 
     def reset_states(self):
         self.cate_sum.assign(tf.zeros([10]))
-        self.total.assign(0)
+        self.total.assign(tf.zeros([10]))
 
     def result(self):
         return self.cate_sum / self.total

@@ -1,7 +1,7 @@
 import os.path as path
 
-import option
-import model
+import tensorflow as tf
 
-def getCate(model, params):
-    pass
+import option
+import data
+import model
