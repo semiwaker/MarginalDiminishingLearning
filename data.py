@@ -1,5 +1,6 @@
 import pickle
 import json
+import itertools
 import os.path as path
 
 import tensorflow as tf
@@ -18,12 +19,8 @@ class DataLoader:
         self.labelNames = [str(s, encoding="utf-8")
                            for s in self.meta[b"label_names"]]
 
-        self.trainData = self.loadFile(
-            path.join(self.dataset, "data_batch_" + str(self.params.dataBatch)))
-        nextBatch = self.params.dataBatch + 1
-        nextBatch = 1 if nextBatch > 5 else nextBatch
-        self.testData = self.loadFile(
-            path.join(self.dataset, "data_batch_" + str(self.params.dataBatch)))
+        self.trainData = self.loadFile(path.join(self.dataset, "data_bal_1"))
+        self.testData = self.loadFile(path.join(self.dataset, "data_bal_2"))
         self.valData = self.loadFile(path.join(self.dataset, "test_batch"))
         with open(self.params.splitPath, "r") as file:
             self.split = json.load(file)
@@ -50,7 +47,6 @@ class DataLoader:
         # Keep testData and valData unchanged
         self.testData = applySplit(self.testData, False)
         self.valData = applySplit(self.valData, False)
-
 
         def makeDataset(data):
             dataset = tf.data.Dataset.from_tensor_slices(data[b"data"])
@@ -79,6 +75,30 @@ class DataLoader:
         split = [1000, 950, 950, 900, 500, 450, 400, 200, 100, 10]
         with open(self.params.splitPath, "w") as file:
             json.dump(split, file, indent=4)
+
+    def makeBalanced(self):
+        data = [[] for i in range(10)]
+
+        for i in range(1, 6):
+            d = dataloader.loadFile(
+                "data/cifar-10-batches-py/data_batch_"+str(i))
+            label = d[b"labels"]
+            for i in range(10000):
+                data[label[i]].append(d[b"data"][i])
+
+        data1 = {
+            b"data": list(itertools.chain(*[u[:1000] for u in data])),
+            b"labels": [i for i in range(10) for j in range(1000)]
+        }
+        data2 = {
+            b"data": list(itertools.chain(*[u[1000:2000] for u in data])),
+            b"labels": [i for j in range(1000) for i in range(10)]
+        }
+
+        with open("data/cifar-10-batches-py/data_bal_1", "wb") as file:
+            pickle.dump(data1, file)
+        with open("data/cifar-10-batches-py/data_bal_2", "wb+") as file:
+            pickle.dump(data2, file)
 
 
 if __name__ == "__main__":
