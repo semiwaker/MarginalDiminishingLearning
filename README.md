@@ -8,7 +8,10 @@ This is a project to study the marginal diminishing effect on the utility of lea
 
 [Python pickle version](http://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz)
 
-Use the Python version of CIFAR10, select `data_batch_x` as training set, `data_batch_(x+1)` as test set and `test_batch` as val set. 
+Use the Python version of CIFAR10.
+Run Dataloader.makeBalanced first to create balanced datasets `data_bal_1` and `data_bal_2`.
+Use `data_bal_1` as training set, `data_bal_2` as test set and `test_batch` as val set.
+Run Dataloader.makeSplit to create split file to specify number of samples in each catergory.
 
 ## result
 
