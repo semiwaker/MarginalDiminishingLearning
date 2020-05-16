@@ -35,8 +35,6 @@ def selectDevice(device):
         except RuntimeError as e:
             # Memory growth must be set before GPUs have been initialized
             print(e)
-    if device < 0:
-        return '/CPU:0'
 
 
 def getDevice():

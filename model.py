@@ -11,17 +11,16 @@ def makeBaselineModel(params):
     return keras.Sequential(
         (
             layers.Input([32, 32, 3]),
-            layers.Conv2D(8, 5, padding="same"),  # (8, 32, 32)
+            layers.Conv2D(32, 3, padding="same", strides=(2, 2)),  # (32, 16, 16)
+            layers.Dropout(0.2),
             layers.BatchNormalization(),
-            layers.MaxPool2D(),  # (8, 16, 16)
-            layers.Conv2D(16, 3, padding="same"),  # (16, 16, 16)
+            layers.MaxPool2D(),  # (32, 8, 8)
+            layers.Conv2D(64, 3, padding="same"),  # (64, 8, 8)
+            layers.Dropout(0.2),
             layers.BatchNormalization(),
-            layers.MaxPool2D(),  # (16, 8, 8)
-            layers.Conv2D(32, 3, padding="same"),  # (32, 8, 8)
-            layers.BatchNormalization(),
-            layers.MaxPool2D(),  # (32, 4, 4)
+            layers.MaxPool2D(),  # (64, 4, 4)
             layers.Flatten(),
-            layers.Dense(64, activation="relu"),
+            layers.Dense(1024, activation="relu"),
             layers.Dropout(0.2),
             layers.Dense(10),
             layers.Softmax()
