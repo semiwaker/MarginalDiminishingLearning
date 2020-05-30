@@ -30,10 +30,9 @@ def makeBaselineModel(params):
     )
 
 
-class SplitModel(keras.module):
-    def __init__(self, params):
-        super(SplitModel, self).__init__()
-        self.conv = keras.Sequential(
+def makeSplitModel(params):
+    conv = keras.Sequential(
+        (
             layers.Input([32, 32, 3]),
             layers.Conv2D(32, 3, padding="same",
                           strides=(2, 2)),  # (32, 16, 16)
@@ -46,17 +45,23 @@ class SplitModel(keras.module):
             layers.MaxPool2D(),  # (64, 4, 4)
             layers.Flatten(),
             layers.Dense(1024, activation="relu")
-        )
-        self.predict = keras.Sequential(
+        ),
+        "Conv"
+    )
+    predict = keras.Sequential(
+        (
+            layers.Input([1024]),
             layers.Dropout(0.2),
             layers.Dense(10),
             layers.Softmax()
-        )
-
-    def call(self, x, training=False):
-        x = self.conv(x, training=training)
-        y = self.predict(x, training=training)
-        return x, y
+        ),
+        "Predict"
+    )
+    x = keras.Input([32, 32, 3])
+    y = conv(x)
+    prediction = predict(y)
+    encoding = tf.stop_gradient(y)
+    return keras.Model(inputs=[x], outputs=[prediction, encoding])
 
 
 class CateAcc(keras.metrics.Metric):

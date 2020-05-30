@@ -1,5 +1,6 @@
 import argparse
 
+
 def read():
     parser = argparse.ArgumentParser(description='MarginalDiminishingLearning')
 
@@ -16,7 +17,7 @@ def read():
 
     parser.add_argument('--dataset', default='data/cifar-10-batches-py',
                         type=str, help='Path to the dataset')
-    parser.add_argument('--dataBatch', default = 1, type=int,
+    parser.add_argument('--dataBatch', default=1, type=int,
                         help='Specified which data batch to use')
     parser.add_argument('--splitPath', default='data/split.json',
                         type=str, help='Path to the split file')
@@ -29,6 +30,13 @@ def read():
                         help='Number of epochs to run')
     parser.add_argument('--learningRate', default=1e-3, type=float,
                         help='Learning rate')
+
+    parser.add_argument('--alpha', default=-1.0, type=float,
+                        help="Alpha coefficient in the power law of learning")
+    parser.add_argument('--beta', default=1.0, type=float,
+                        help="Beta coefficient in the power law of learning")
+    parser.add_argument('--warmUpEpochs', default=10, type=int,
+                        help="Warm up epochs before calculating weight")
 
     parsed = parser.parse_args()
 
