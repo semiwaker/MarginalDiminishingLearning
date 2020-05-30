@@ -48,12 +48,16 @@ class DataLoader:
         self.testData = applySplit(self.testData, False)
         self.valData = applySplit(self.valData, False)
 
+        self.trainLen = len(self.trainData[b"data"])
+        self.testLen = len(self.testData[b"data"])
+        self.valLen = len(self.valData[b"data"])
+
         def makeDataset(data):
             dataset = tf.data.Dataset.from_tensor_slices(data[b"data"])
             dataset = dataset.map(lambda x: tf.reshape(x, [3, 32, 32]))
             dataset = dataset.map(lambda x: tf.stack(
                 [x[0], x[1], x[2]], axis=-1))
-            dataset = dataset.map(lambda x: x/256)
+            dataset = dataset.map(lambda x: tf.cast(x/256, tf.float32))
             labelset = tf.data.Dataset.from_tensor_slices(data[b"labels"])
             labelset = labelset.map(lambda x: tf.one_hot(x, 10))
             dataset = tf.data.Dataset.zip((dataset, labelset))
