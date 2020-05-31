@@ -43,9 +43,9 @@ def avgAcc(numTrial, dataloader, trainFunc, params):
     valAcc = tf.reduce_mean(tf.stack(valAcc))
     cateAcc = tf.reduce_mean(tf.stack(cateAcc), axis=0)
     print(f"Finished {timer()}")
-    print(f"Overall train accuracy {trainAcc}")
-    print(f"Overall val accuracy {valAcc}")
-    print(f"Overall cate accuracy ", end='')
+    print("Overall train accuracy %.4f"%(float(trainAcc)))
+    print("Overall val accuracy %.4f"%(float(valAcc)))
+    print("Overall cate accuracy ", end='')
     for i in cateAcc[:-1]:
         print("%.2lf," % i, end=' ')
     print("%.3f" % cateAcc[-1])
@@ -53,7 +53,6 @@ def avgAcc(numTrial, dataloader, trainFunc, params):
 
 def trainBaseline(dataloader, trainSet, testSet, valSet, params):
     baseline = model.makeBaselineModel(params)
-    baseline.summary()
 
     optimizer = keras.optimizers.Adam(lr=params.learningRate)
     loss_fn = keras.losses.CategoricalCrossentropy()
@@ -75,12 +74,10 @@ def trainBaseline(dataloader, trainSet, testSet, valSet, params):
 
 
 def trainWeightedBaseline(dataloader, trainSet, testSet, valSet, params):
-
     labels = dataloader.trainData[b"labels"]
     weights = powLawOnLabels(labels, 10, params)
 
     baseline = model.makeBaselineModel(params)
-    baseline.summary()
     optimizer = keras.optimizers.Adam(lr=params.learningRate)
     loss_fn = keras.losses.CategoricalCrossentropy()
     metricAcc = keras.metrics.CategoricalAccuracy()
