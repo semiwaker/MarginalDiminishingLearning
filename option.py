@@ -9,6 +9,8 @@ def read():
 
     parser.add_argument('--dataUnbias', action="store_true",
                         default=False, help="Stop data bias")
+    parser.add_argument('--numTrails', default=10, type=int,
+                        help="Number of trails")
 
     parser.add_argument('--trainModel', default="None",
                         type=str, help="Specify which model to train")
