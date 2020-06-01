@@ -333,7 +333,7 @@ def trainLossWeight(dataloader, trainSet, testSet, valSet, weightUpdateFunc, par
     return ta, va, ca
 
 
-def trainFeatureWeight(params, weightUpdateFunc):
+def trainFeatureWeight(dataloader, trainSet, testSet, valSet, weightUpdateFunc, params):
     dataloader = data.DataLoader(params)
     trainSet, testSet, valSet = dataloader.readData()
 
@@ -397,8 +397,10 @@ def trainFeatureWeight(params, weightUpdateFunc):
         if epochID >= params.warmUpEpochs:
             encode_record = np.concatenate(encode_record)
             weights = weightUpdateFunc(old_encode_record, encode_record, params)
-
-        old_encode_record = encode_record
+            print(weights)
+            old_encode_record = encode_record
+        else:
+            old_encode_record = np.concatenate(encode_record)
 
     splitModel.save_weights(
         path.join(params.modelPath, "splitModel.keras"))
@@ -415,6 +417,15 @@ def trainFeatureWeight(params, weightUpdateFunc):
     print()
     print("%.3lf" % acc[9])
 
+    va = metricAcc.result()
+    ca = cateAcc.result()
+    metricAcc.reset_states()
+    for batch, labels in trainSet:
+        prediction, _ = splitModel(batch, training=False)
+        metricAcc.update_state(labels, prediction)
+    ta = metricAcc.result()
+    return ta, va, ca
+
 
 if __name__ == "__main__":
     params = option.read()
@@ -426,7 +437,7 @@ if __name__ == "__main__":
         "kmean": lambda dl, train, test, val, p: trainNeighbourWeight(dl, train, test, val, KMeanupdate, p),
         "naiveloss": lambda dl, train, test, val, p: trainLossWeight(dl, train, test, val, Onlylossupdate, p),
         "trendloss": lambda dl, train, test, val, p: trainLossWeight(dl, train, test, val, Trendlossupdate, p),
-        "featureL1": lambda x: trainFeatureWeight(x, FeatureL1update)
+        "featureL1": lambda dl, train, test, val, p: trainFeatureWeight(dl, train, test, val, FeatureL1update, p)
     }
     if params.useGPU:
         utils.selectDevice(0)

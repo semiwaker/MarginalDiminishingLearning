@@ -42,4 +42,7 @@ Number of instances of each category in the biased train data: 1000, 950, 950, 9
 | Power law trend loss weighted, $\alpha=0.3$, warm up | 0.9535 | 0.4433 | 0.77, 0.76, 0.56, 0.50, 0.48, 0.29, 0.50, 0.30, 0.14, 0.006 |
 | Power law trend loss weighted, $\alpha=0.2$, warm up | 0.9330 | 0.4380 | 0.75, 0.72, 0.57, 0.47, 0.49, 0.26, 0.60, 0.31, 0.13, 0.004 |
 | Power law trend loss weighted, $\alpha=0.1$, warm up | 0.9447 | 0.4432 | 0.77, 0.73, 0.59, 0.45, 0.49, 0.27, 0.54, 0.35, 0.15, 0.002 |
+| Power law featureL1 weighted, $\alpha=1$, warm up | 0.9574 | 0.4515 | 0.75, 0.75, 0.60, 0.48, 0.45, 0.25, 0.63, 0.33, 0.21, 0.005 |
+| Power law featureL1 weighted, $\alpha=2$, warm up | 0.9111 | 0.4296 | 0.74, 0.73, 0.55, 0.47, 0.50, 0.24, 0.59, 0.27, 0.14, 0.001 |
+| Power law featureL1 weighted, $\alpha=0.2$, warm up | 0.9336 | 0.4407 | 0.75, 0.75, 0.60, 0.45, 0.48, 0.22, 0.60, 0.29, 0.18, 0.003 |
 
