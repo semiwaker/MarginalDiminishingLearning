@@ -238,7 +238,7 @@ def trainNeighbourWeight(dataloader, trainSet, testSet, valSet, weightUpdateFunc
     return ta, va, ca
 
 
-def trainLossWeight(params, weightUpdateFunc):
+def trainLossWeight(dataloader, trainSet, testSet, valSet, weightUpdateFunc, params):
     dataloader = data.DataLoader(params)
     trainSet, testSet, valSet = dataloader.readData()
 
@@ -255,6 +255,7 @@ def trainLossWeight(params, weightUpdateFunc):
     timer = utils.Timer()
     # trainables = [splitModel.conv.trainable_variables,
     #   splitModel.predict.trainable_variables]
+    old_loss_record = []
     for epochID in range(1, params.numEpochs+1):
         IDcnt = 0
         batchCnt = 0
@@ -303,8 +304,9 @@ def trainLossWeight(params, weightUpdateFunc):
             loss_record = np.concatenate(loss_record)
             weights = weightUpdateFunc(old_loss_record, loss_record, params)
             print(weights)
-
-        old_loss_record = loss_record
+            old_loss_record = loss_record
+        else:
+            old_loss_record = np.concatenate(loss_record)
 
     splitModel.save_weights(
         path.join(params.modelPath, "splitModel.keras"))
@@ -320,6 +322,15 @@ def trainLossWeight(params, weightUpdateFunc):
         print("%.2lf," % i, end=' ')
     print()
     print("%.3lf" % acc[9])
+
+    va = metricAcc.result()
+    ca = cateAcc.result()
+    metricAcc.reset_states()
+    for batch, labels in trainSet:
+        prediction, _ = splitModel(batch, training=False)
+        metricAcc.update_state(labels, prediction)
+    ta = metricAcc.result()
+    return ta, va, ca
 
 
 def trainFeatureWeight(params, weightUpdateFunc):
@@ -413,7 +424,8 @@ if __name__ == "__main__":
         "baseline": trainBaseline,
         "weightedBaseline": trainWeightedBaseline,
         "kmean": lambda dl, train, test, val, p: trainNeighbourWeight(dl, train, test, val, KMeanupdate, p),
-        "naiveloss": lambda x: trainLossWeight(x, Onlylossupdate),
+        "naiveloss": lambda dl, train, test, val, p: trainLossWeight(dl, train, test, val, Onlylossupdate, p),
+        "trendloss": lambda dl, train, test, val, p: trainLossWeight(dl, train, test, val, Trendlossupdate, p),
         "featureL1": lambda x: trainFeatureWeight(x, FeatureL1update)
     }
     if params.useGPU:
