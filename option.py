@@ -29,7 +29,7 @@ def read():
     
     parser.add_argument('--batchSize', default=16, type=int,
                         help='Batch size')
-    parser.add_argument('--numEpochs', default=10, type=int,
+    parser.add_argument('--numEpochs', default=30, type=int,
                         help='Number of epochs to run')
     parser.add_argument('--learningRate', default=1e-3, type=float,
                         help='Learning rate')
