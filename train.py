@@ -5,6 +5,8 @@ import numpy as np
 import tensorflow as tf
 import tensorflow.keras as keras
 import scipy.cluster as cluster
+import scipy.stats as stats
+from sklearn.neighbors import KernelDensity, BallTree
 
 import option
 import data
@@ -19,7 +21,8 @@ def powLawOnLabels(labels, numLabels, params):
     label_weight = np.array(cnt)
     label_weight = np.power(label_weight, params.alpha)
     label_weight /= np.sum(label_weight)
-    weights = [label_weight[i] for i in labels]
+    label_weight *= params.beta
+    weights = np.array([label_weight[i] for i in labels])
     return weights
 
 
@@ -43,8 +46,8 @@ def avgAcc(numTrial, dataloader, trainFunc, params):
     valAcc = tf.reduce_mean(tf.stack(valAcc))
     cateAcc = tf.reduce_mean(tf.stack(cateAcc), axis=0)
     print(f"Finished {timer()}")
-    print("Overall train accuracy %.4f"%(float(trainAcc)))
-    print("Overall val accuracy %.4f"%(float(valAcc)))
+    print("Overall train accuracy %.4f" % (float(trainAcc)))
+    print("Overall val accuracy %.4f" % (float(valAcc)))
     print("Overall cate accuracy ", end='')
     for i in cateAcc[:-1]:
         print("%.2lf," % i, end=' ')
@@ -101,6 +104,26 @@ def trainWeightedBaseline(dataloader, trainSet, testSet, valSet, params):
 def KMeanupdate(encode_record, params):
     centroids, label = cluster.vq.kmeans2(encode_record, 10, minit="points")
     weights = powLawOnLabels(label, 10, params)
+    return tf.constant(weights, dtype=tf.float32)
+
+
+def KMeanDistupdate(encode_record, params):
+    centroids, label = cluster.vq.kmeans2(encode_record, 10, minit="points")
+    weights = powLawOnLabels(label, 10, params)
+    dist = np.array([np.linalg.norm(centroids[l]-encode_record[i])
+                     for i, l in enumerate(label)])
+    dist = np.power(dist * 0.1, -params.alpha) * params.beta
+    weights *= dist
+    return tf.constant(weights, dtype=tf.float32)
+
+
+def radiusUpdate(encode_record, params):
+    encode_record -= np.mean(encode_record, 0)
+    print(np.max(np.max(encode_record)), np.min(np.min(encode_record)))
+    tree = BallTree(encode_record)
+    neighbor = tree.query_radius(encode_record, 3, count_only=True) + 1
+    print(np.max(neighbor), np.min(neighbor))
+    weights = np.power(neighbor, params.alpha) * params.beta
     return tf.constant(weights, dtype=tf.float32)
 
 
@@ -190,7 +213,9 @@ if __name__ == "__main__":
         "None": lambda x: None,
         "baseline": trainBaseline,
         "weightedBaseline": trainWeightedBaseline,
-        "kmean": lambda dl, train, test, val, p: trainNeighbourWeight(dl, train, test, val, KMeanupdate, p)
+        "kmean": lambda dl, train, test, val, p: trainNeighbourWeight(dl, train, test, val, KMeanupdate, p),
+        "kmeanDist": lambda dl, train, test, val, p: trainNeighbourWeight(dl, train, test, val, KMeanDistupdate, p),
+        "radius": lambda dl, train, test, val, p: trainNeighbourWeight(dl, train, test, val, radiusUpdate, p)
     }
     if params.useGPU:
         utils.selectDevice(0)

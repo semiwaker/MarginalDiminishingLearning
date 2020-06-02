@@ -19,7 +19,10 @@ $\ln y = a\ln x + b$, can be simplified to $y = \beta\cdot x^\alpha,\beta > 0$
 
 ## result
 
-Number of instances of each category in the biased train data: 1000, 950, 950, 900, 500, 450, 400, 200, 100, 10
+Number of instances of each category in the biased train data:
+| Label | airplane | automobile | bird | cat | deer | dog | frog | horse | ship | truck |
+| ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
+| Instances | 1000 | 950 | 950 | 900 | 500 | 450 | 400 | 200 | 100 | 10 |
 
 Run 10 trials to get average result.
 
@@ -32,5 +35,9 @@ Run 10 trials to get average result.
 | Power law weighted, $\alpha=-2$ | 0.9477 | 0.4529 | 0.71, 0.77, 0.61, 0.47, 0.44, 0.31, 0.58, 0.33, 0.23, 0.005 |
 | Power law weighted, $\alpha=-5$ | 0.1553 | 0.1136 | 0.13, 0.13, 0.12, 0.13, 0.10, 0.10, 0.11, 0.08, 0.07, 0.075 |
 | Kmeans weigthed, $\alpha=-0.5$ | 0.8934 | 0.4330 | 0.72, 0.70, 0.60, 0.44, 0.50, 0.24, 0.56, 0.29, 0.19, 0.004 |
-| Kmeans weigthed, $\alpha=-0.5$, warm up | 0.9271 | 0.4047 | 0.88, 0.60, 0.59, 0.34, 0.48, 0.17, 0.37, 0.12, 0.34, 0.004 |
-| Kmeans weigthed, $\alpha=-1$, warm up | 0.9692 | 0.4433 | 0.76, 0.79, 0.58, 0.52, 0.43, 0.37, 0.46, 0.39, 0.09, 0.01 |
+| Kmeans weigthed, $\alpha=-0.5$, warm up | 0.8595 | 0.4176 | 0.72, 0.63, 0.57, 0.44, 0.48, 0.28, 0.54, 0.27, 0.15, 0.002 |
+| Kmeans weigthed, $\alpha=-1$, | 0.9028 | 0.4474 | 0.71, 0.71, 0.59, 0.46, 0.52, 0.32, 0.57, 0.30, 0.18, 0.002 |
+| Kmeans weigthed, $\alpha=-1$, warm up | 0.8755 | 0.4262 | 0.73, 0.65, 0.53, 0.52, 0.47, 0.27, 0.55, 0.27, 0.16, 0.003 |
+| Kmeans weigthed, $\alpha=-2$ | 0.7655 | 0.4030 | 0.65, 0.64, 0.59, 0.48, 0.41, 0.27, 0.37, 0.24, 0.16, 0.007 |
+| Kmeans weigthed, $\alpha=-2$, warm up | 0.7924 | 0.3998 | 0.70, 0.64, 0.58, 0.42, 0.40, 0.26, 0.42, 0.21, 0.22, 0.004 |
+| Kmeans with distance, $\alpha=-1$ | 0.8690 | 0.4217 | 0.67, 0.69, 0.60, 0.46, 0.47, 0.22, 0.53, 0.29, 0.18, 0.003 |
