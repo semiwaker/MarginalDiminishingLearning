@@ -2,6 +2,7 @@ import pickle
 import json
 import itertools
 import os.path as path
+import random
 
 import tensorflow as tf
 import tensorflow.keras as keras
@@ -37,6 +38,10 @@ class DataLoader:
                 else:
                     data.extend(d)
                     label.extend(l)
+            tmp = list(zip(data, label))
+            random.shuffle(tmp)
+            data = [i[0] for i in tmp]
+            label = [i[1] for i in tmp]
             return {b"data": data, b"labels": label}
 
         if not self.params.dataUnbias:
@@ -61,7 +66,6 @@ class DataLoader:
             labelset = tf.data.Dataset.from_tensor_slices(data[b"labels"])
             labelset = labelset.map(lambda x: tf.one_hot(x, 10))
             dataset = tf.data.Dataset.zip((dataset, labelset))
-            dataset = dataset.shuffle(10000)
             dataset = dataset.batch(self.params.batchSize)
             dataset = dataset.prefetch(2)
             return dataset
