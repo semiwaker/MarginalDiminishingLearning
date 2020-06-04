@@ -3,5 +3,7 @@
 /.vscode/*
 /__pycache__/*
 /saved_model/*
+/.idea/*
 
 testing.py
+script.py
