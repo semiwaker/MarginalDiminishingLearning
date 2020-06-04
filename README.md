@@ -48,6 +48,7 @@ Run 10 trials to get average result.
 | Power law loss weighted, $\alpha=0.1$, warm up | 0.8913 | 0.4181 | 0.70, 0.67, 0.59, 0.44, 0.46, 0.30, 0.57, 0.26, 0.12, 0.001 |
 | Power law loss weighted, $\alpha=0.2$, warm up | 0.8723 | 0.4192 | 0.72, 0.62, 0.59, 0.48, 0.47, 0.30, 0.56, 0.27, 0.13, 0.002 |
 | Power law loss weighted, $\alpha=0.3$, warm up (bug)| 0.9022 | 0.4223 | 0.69, 0.70, 0.53, 0.55, 0.48, 0.27, 0.47, 0.32, 0.12, 0.007 |
+| Power law loss weighted, $\alpha=0.5$, warm up | 0.8846 | 0.4139 | 0.71, 0.74, 0.63, 0.41, 0.38, 0.21, 0.51, 0.22, 0.24, 0.002 |
 | Power law trend loss weighted, $\alpha=1$, warm up (bug)| 0.7730 | 0.3871 | 0.66, 0.58, 0.56, 0.42, 0.46, 0.18, 0.52, 0.23, 0.11, 0.009 |
 | Power law trend loss weighted, $\alpha=1$, warm up | 0.8415 | 0.3947 | 0.73, 0.61, 0.60, 0.39, 0.35, 0.28, 0.44, 0.23, 0.15, 0.008 |
 | Power law trend loss weighted, $\alpha=0.5$, warm up (bug)| 0.8999 | 0.4209 | 0.71, 0.70, 0.60, 0.44, 0.45, 0.28, 0.46, 0.25, 0.17, 0.008 |
@@ -58,5 +59,9 @@ Run 10 trials to get average result.
 | Power law trend loss weighted, $\alpha=0.1$, warm up (bug)| 0.9447 | 0.4432 | 0.77, 0.73, 0.59, 0.45, 0.49, 0.27, 0.54, 0.35, 0.15, 0.002 |
 | Power law trend loss weighted, $\alpha=0.1$, warm up | 0.8867 | 0.4250 | 0.65, 0.74, 0.59, 0.42, 0.50, 0.26, 0.62, 0.27, 0.13, 0.002 |
 | Power law featureL1 weighted, $\alpha=1$, warm up (bug)| 0.9574 | 0.4515 | 0.75, 0.75, 0.60, 0.48, 0.45, 0.25, 0.63, 0.33, 0.21, 0.005 |
+| Power law featureL1 weighted, $\alpha=1$, warm up | 0.9153 | 0.4311 | 0.71, 0.70, 0.63, 0.47, 0.43, 0.27, 0.56, 0.23, 0.26, 0.003 |
 | Power law featureL1 weighted, $\alpha=2$, warm up (bug)| 0.9111 | 0.4296 | 0.74, 0.73, 0.55, 0.47, 0.50, 0.24, 0.59, 0.27, 0.14, 0.001 |
+| Power law featureL1 weighted, $\alpha=0.5$, warm up | 0.9080 | 0.4306 | 0.64, 0.74, 0.62, 0.47, 0.52, 0.24, 0.55, 0.29, 0.18, 0.003 |
 | Power law featureL1 weighted, $\alpha=0.2$, warm up (bug)| 0.9336 | 0.4407 | 0.75, 0.75, 0.60, 0.45, 0.48, 0.22, 0.60, 0.29, 0.18, 0.003 |
+| Power law featureL1 weighted, $\alpha=0.2$, warm up | 0.8682 | 0.4142 | 0.69, 0.69, 0.67, 0.40, 0.47, 0.20, 0.59, 0.25, 0.13, 0.004 |
+| Power law featureL1 weighted, $\alpha=0.1$, warm up | 0.8548 | 0.4083 | 0.67, 0.70, 0.58, 0.41, 0.48, 0.33, 0.48, 0.28, 0.09, 0.001 |
