@@ -9,9 +9,8 @@ def read():
     
     parser.add_argument('--dataUnbias', action="store_true",
                         default=False, help="Stop data bias")
-
-    parser.add_argument('--numTrails', default=10, type=int,
-                        help="Number of trails")
+    parser.add_argument('--numTrials', default=10, type=int,
+                        help="Number of trials")
 
     parser.add_argument('--trainModel', default="None",
                         type=str, help="Specify which model to train")
@@ -38,7 +37,7 @@ def read():
                         help="Alpha coefficient in the power law of learning")
     parser.add_argument('--beta', default=1.0, type=float,
                         help="Beta coefficient in the power law of learning")
-    parser.add_argument('--warmUpEpochs', default=10, type=int,
+    parser.add_argument('--warmUpEpochs', default=1, type=int,
                         help="Warm up epochs before calculating weight")
     
     parsed = parser.parse_args()

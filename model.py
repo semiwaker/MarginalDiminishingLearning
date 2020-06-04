@@ -44,13 +44,13 @@ def makeSplitModel(params):
             layers.BatchNormalization(),
             layers.MaxPool2D(),  # (64, 4, 4)
             layers.Flatten(),
-            layers.Dense(1024, activation="relu")
+            layers.Dense(128, activation="relu")
         ),
         "Conv"
     )
     predict = keras.Sequential(
         (
-            layers.Input([1024]),
+            layers.Input([128]),
             layers.Dropout(0.2),
             layers.Dense(10),
             layers.Softmax()

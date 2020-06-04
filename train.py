@@ -1,4 +1,6 @@
+import os
 import os.path as path
+import sys
 import math
 
 import numpy as np
@@ -23,6 +25,7 @@ def powLawOnLabels(labels, numLabels, params):
     label_weight /= np.sum(label_weight)
     label_weight *= params.beta
     weights = np.array([label_weight[i] for i in labels])
+    print(np.max(weights), np.min(weights))
     return weights
 
 
@@ -49,7 +52,7 @@ def avgAcc(numTrial, dataloader, trainFunc, params):
     trainAcc = tf.reduce_mean(tf.stack(trainAcc))
     valAcc = tf.reduce_mean(tf.stack(valAcc))
     cateAcc = tf.reduce_mean(tf.stack(cateAcc), axis=0)
-    print(f"Finished {timer()}")
+    print(f"Finished {timer()} {sys.argv}")
     print("Overall train accuracy %.4f" % (float(trainAcc)))
     print("Overall val accuracy %.4f" % (float(valAcc)))
     print("Overall cate accuracy ", end='')
@@ -122,8 +125,9 @@ def KMeanDistupdate(encode_record, params):
     weights = powLawOnLabels(label, 10, params)
     dist = np.array([np.linalg.norm(centroids[l]-encode_record[i])
                      for i, l in enumerate(label)])
-    dist = np.power(dist * 0.1, -params.alpha) * params.beta
+    dist = np.power(dist * 0.1, -params.alpha)
     weights *= dist
+    print(np.max(weights), np.min(weights))
     return tf.constant(weights, dtype=tf.float32)
 
 
@@ -447,6 +451,109 @@ def trainFeatureWeight(dataloader, trainSet, testSet, valSet, weightUpdateFunc, 
     return ta, va, ca
 
 
+def trainKmeanBatch(dataloader, trainSet, testSet, valSet, params, withDist=False):
+    dataloader = data.DataLoader(params)
+    trainSet, testSet, valSet = dataloader.readData()
+
+    splitModel = model.makeSplitModel(params)
+
+    optimizer = keras.optimizers.Adam(lr=params.learningRate)
+    loss_fn = keras.losses.CategoricalCrossentropy()
+    metricAcc = keras.metrics.CategoricalAccuracy()
+    cateAcc = model.CateAcc()
+
+    datalen = dataloader.trainLen
+    timer = utils.Timer()
+    centroids = []
+    clusterWeight = np.ones([10])
+    # trainables = [splitModel.conv.trainable_variables,
+    #   splitModel.predict.trainable_variables]
+    for epochID in range(1, params.numEpochs+1):
+        IDcnt = 0
+        batchCnt = 0
+        metricAcc.reset_states()
+        trainloss = 0
+        encode_record = []
+        maxWeight = np.max(clusterWeight)
+        minWeight = np.min(clusterWeight)
+        if withDist:
+            maxWeight = 0
+            minWeight = 10000
+        for batch, labels in trainSet:
+            batchSize = batch.shape[0]
+            with tf.GradientTape() as tape:
+                prediction, encoding = splitModel(batch, training=True)
+                if epochID <= params.warmUpEpochs:
+                    batchWeight = 1.0
+                else:
+                    encode = tf.reduce_mean(encoding, 0)
+                    dists = np.array([np.linalg.norm(encode-c)
+                                      for c in centroids])
+                    idx = np.argmin(dists)
+                    batchWeight = clusterWeight[idx]
+                loss = loss_fn(labels, prediction)
+                loss *= batchWeight
+                # print(loss)
+            trainloss += loss
+            gradient = tape.gradient(loss, splitModel.trainable_variables)
+            optimizer.apply_gradients(
+                zip(gradient, splitModel.trainable_variables))
+            metricAcc.update_state(labels, prediction)
+
+            encode_record.append(encoding.numpy())
+
+            batchCnt += 1
+            IDcnt += batchSize
+        trainAcc = metricAcc.result()
+        trainloss /= batchCnt
+
+        batchCnt = 0
+        testloss = 0
+        metricAcc.reset_states()
+        for batch, labels in testSet:
+            prediction, _ = splitModel(batch, training=False)
+            loss = loss_fn(labels, prediction)
+            testloss += loss
+            batchCnt += 1
+            metricAcc.update_state(labels, prediction)
+        testAcc = metricAcc.result()
+        testloss /= batchCnt
+
+        print(f"Epoch {epochID} {timer()}")
+        print(f"Weight: [{minWeight}, {maxWeight}]")
+        print(f"Train Loss: {trainloss} Accuracy: {trainAcc}")
+        print(f"Test Loss: {testloss} Accuracy: {testAcc}")
+
+        if epochID >= params.warmUpEpochs:
+            encode_record = np.concatenate(encode_record)
+            centroids, label = cluster.vq.kmeans2(
+                encode_record, 10, minit="points")
+            cnt = [0] * 10
+            for i in label:
+                cnt[i] += 1
+            clusterWeight = np.array(cnt)
+            clusterWeight = np.power(clusterWeight, params.alpha)
+            clusterWeight /= np.sum(clusterWeight)
+            clusterWeight *= params.beta
+
+    splitModel.save_weights(
+        path.join(params.modelPath, "splitModel.keras"))
+    metricAcc.reset_states()
+    cateAcc.reset_states()
+    for batch, labels in valSet:
+        prediction, _ = splitModel(batch, training=False)
+        metricAcc.update_state(labels, prediction)
+        cateAcc.update_state(labels, prediction)
+    va = metricAcc.result()
+    ca = cateAcc.result()
+    metricAcc.reset_states()
+    for batch, labels in trainSet:
+        prediction, _ = splitModel(batch, training=False)
+        metricAcc.update_state(labels, prediction)
+    ta = metricAcc.result()
+    return ta, va, ca
+
+
 if __name__ == "__main__":
     params = option.read()
 
@@ -456,13 +563,13 @@ if __name__ == "__main__":
         "weightedBaseline": trainWeightedBaseline,
         "kmean": lambda dl, train, test, val, p: trainNeighbourWeight(dl, train, test, val, KMeanupdate, p),
         "kmeanDist": lambda dl, train, test, val, p: trainNeighbourWeight(dl, train, test, val, KMeanDistupdate, p),
-        "radius": lambda dl, train, test, val, p: trainNeighbourWeight(dl, train, test, val, radiusUpdate, p),
-
         "naiveloss": lambda dl, train, test, val, p: trainLossWeight(dl, train, test, val, Onlylossupdate, p),
         "trendloss": lambda dl, train, test, val, p: trainLossWeight(dl, train, test, val, Trendlossupdate, p),
-        "featureL1": lambda dl, train, test, val, p: trainFeatureWeight(dl, train, test, val, FeatureL1update, p)
+        "featureL1": lambda dl, train, test, val, p: trainFeatureWeight(dl, train, test, val, FeatureL1update, p),
+        "kmeanBatch": lambda dl, train, test, val, p: trainKmeanBatch(dl, train, test, val, p),
+        "radius": lambda dl, train, test, val, p: trainNeighbourWeight(dl, train, test, val, radiusUpdate, p)
     }
     if params.useGPU:
         utils.selectDevice(0)
     dataloader = data.DataLoader(params)
-    avgAcc(params.numTrails, dataloader, trainFuncs[params.trainModel], params)
+    avgAcc(params.numTrials, dataloader, trainFuncs[params.trainModel], params)
